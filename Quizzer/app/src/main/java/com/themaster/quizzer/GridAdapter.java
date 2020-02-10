@@ -7,19 +7,21 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import java.util.List;
+
 public class GridAdapter extends BaseAdapter {
 
-    private int sets = 0;
+    private List<String> sets ;
     private String category;
 
-    public GridAdapter(int sets, String category) {
+    public GridAdapter(List<String>  sets, String category) {
         this.sets = sets;
         this.category = category;
     }
 
     @Override
     public int getCount() {
-        return sets;
+        return sets.size();
     }
 
     @Override
@@ -46,7 +48,7 @@ public class GridAdapter extends BaseAdapter {
         view.setOnClickListener(v -> {
             Intent intent = new Intent(parent.getContext(), QuestionsActivity.class);
             intent.putExtra("category",category);
-            intent.putExtra("setNumber",position+1);
+            intent.putExtra("setId",sets.get(position));
             parent.getContext().startActivity(intent);
         });
 

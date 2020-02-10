@@ -25,12 +25,12 @@ public class CategoriesActivity extends AppCompatActivity {
 
 
     FirebaseDatabase database = FirebaseDatabase.getInstance();
-    DatabaseReference myRef = database.getReference("fir-project-4dbab");
+    DatabaseReference myRef = database.getReference();
 
     Dialog loadingDialog;
 
     RecyclerView recyclerView;
-    List<CategoryModel> list;
+    public static List<CategoryModel> list;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +57,6 @@ public class CategoriesActivity extends AppCompatActivity {
 
         list = new ArrayList<>();
 
-
         final CategoryAdapter adapter = new CategoryAdapter(list);
         recyclerView.setAdapter(adapter);
         loadingDialog.show();
@@ -67,7 +66,16 @@ public class CategoriesActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                 for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
-                    list.add(dataSnapshot1.getValue(CategoryModel.class));
+
+                    List<String> sets = new ArrayList<>();
+                    for (DataSnapshot dataSnapshot2 : dataSnapshot1.child("sets").getChildren()) {
+                        sets.add(dataSnapshot2.getKey());
+                    }
+
+                    list.add(new CategoryModel((dataSnapshot1.child("name").getValue().toString()),
+                            sets, (dataSnapshot1.child("url").getValue()).toString(),
+                            dataSnapshot1.getKey()
+                    ));
                 }
                 adapter.notifyDataSetChanged();
                 loadingDialog.dismiss();
