@@ -1,6 +1,7 @@
 package com.themaster.quizzer;
 
 import android.animation.Animator;
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -31,6 +32,7 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class QuestionsActivity extends AppCompatActivity {
 
@@ -43,7 +45,7 @@ public class QuestionsActivity extends AppCompatActivity {
     TextView questions, indicator;
     FloatingActionButton floatingActionButton;
     LinearLayout optionsContainer;
-    Button ShareBtn, NextBtn;
+    Button shareBtn, nextBtn;
     Dialog loadingDialog;
 
     List<QuestionModel> list;
@@ -51,10 +53,10 @@ public class QuestionsActivity extends AppCompatActivity {
     int position = 0;
     int count = 0;
     int myScore = 0;
-    int setNumber;
     int matchedPosition;
 
-    String category;
+    String setId;
+
 
     List<QuestionModel> bookmarkedList;
 
@@ -62,6 +64,7 @@ public class QuestionsActivity extends AppCompatActivity {
     SharedPreferences.Editor editor;
     Gson gson;
 
+    @SuppressLint("CommitPrefEdits")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,8 +76,8 @@ public class QuestionsActivity extends AppCompatActivity {
         indicator = findViewById(R.id.txt_indicator);
         optionsContainer = findViewById(R.id.optionsContainer);
         floatingActionButton = findViewById(R.id.float_bookmark);
-        ShareBtn = findViewById(R.id.btnShare);
-        NextBtn = findViewById(R.id.btnNext);
+        shareBtn = findViewById(R.id.btnShare);
+        nextBtn = findViewById(R.id.btnNext);
 
         myPref = getSharedPreferences(FILE_NAME, Context.MODE_PRIVATE);
         editor = myPref.edit();
@@ -96,8 +99,7 @@ public class QuestionsActivity extends AppCompatActivity {
             }
         });
 
-        category = getIntent().getStringExtra("category");
-        setNumber = getIntent().getIntExtra("setNumber", 1);
+        setId = getIntent().getStringExtra("setId");
 
 
         loadingDialog = new Dialog(this);
@@ -108,14 +110,21 @@ public class QuestionsActivity extends AppCompatActivity {
 
         list = new ArrayList<>();
         loadingDialog.show();
-        myRef.child("sets")
-                .child("Categories")
-                .child("questions")
-                .orderByChild("setNumber").equalTo(setNumber).addListenerForSingleValueEvent(new ValueEventListener() {
+        myRef
+                .child("sets").child(setId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    list.add(snapshot.getValue(QuestionModel.class));
+                for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
+
+                    String id = dataSnapshot1.getKey();
+                    String question = Objects.requireNonNull(dataSnapshot1.child("question").getValue()).toString();
+                    String a = Objects.requireNonNull(dataSnapshot1.child("optionA").getValue()).toString();
+                    String b = Objects.requireNonNull(dataSnapshot1.child("optionB").getValue()).toString();
+                    String c = Objects.requireNonNull(dataSnapshot1.child("optionC").getValue()).toString();
+                    String d = Objects.requireNonNull(dataSnapshot1.child("optionD").getValue()).toString();
+                    String answer = Objects.requireNonNull(dataSnapshot1.child("answer").getValue()).toString();
+
+                    list.add(new QuestionModel(id, question, a, b, c, d, answer, setId));
                 }
                 if (list.size() > 0) {
                     for (int i = 0; i < 4; i++) {
@@ -125,9 +134,9 @@ public class QuestionsActivity extends AppCompatActivity {
                     }
                     playAnim(questions, 0, list.get(position).getQuestion());
 
-                    NextBtn.setOnClickListener(v -> {
-                        NextBtn.setEnabled(false);
-                        NextBtn.setAlpha(0.5f);
+                    nextBtn.setOnClickListener(v -> {
+                        nextBtn.setEnabled(false);
+                        nextBtn.setAlpha(0.5f);
                         enableOption(true);
                         position++;
                         if (position == list.size()) {
@@ -141,12 +150,12 @@ public class QuestionsActivity extends AppCompatActivity {
                         count = 0;
                         playAnim(questions, 0, list.get(position).getQuestion());
                     });
-                    ShareBtn.setOnClickListener(v -> {
+                    shareBtn.setOnClickListener(v -> {
                         String body = list.get(position).getQuestion() + "\n" +
-                                list.get(position).getOption1() + "\n" +
-                                list.get(position).getOption2() + "\n" +
-                                list.get(position).getOption3() + "\n" +
-                                list.get(position).getOption4();
+                                list.get(position).getA() + "\n" +
+                                list.get(position).getB() + "\n" +
+                                list.get(position).getC() + "\n" +
+                                list.get(position).getD();
 
                         Intent shareIntent = new Intent(Intent.ACTION_SEND);
                         shareIntent.setType("text/plane");
@@ -177,21 +186,25 @@ public class QuestionsActivity extends AppCompatActivity {
     }
 
     private void playAnim(final View view, final int value, final String data) {
-        view.animate()
-                .alpha(value).scaleX(value).scaleY(value).setDuration(500).setStartDelay(100)
+
+        for (int i = 0; i < 4; i++) {
+            optionsContainer.getChildAt(i).setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#989898")));
+        }
+
+        view.animate().alpha(value).scaleX(value).scaleY(value).setDuration(500).setStartDelay(100)
                 .setInterpolator(new DecelerateInterpolator()).setListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
                 if (value == 0 && count < 4) {
                     String Option = "";
                     if (count == 0) {
-                        Option = list.get(position).getOption1();
+                        Option = list.get(position).getA();
                     } else if (count == 1) {
-                        Option = list.get(position).getOption2();
+                        Option = list.get(position).getB();
                     } else if (count == 2) {
-                        Option = list.get(position).getOption3();
+                        Option = list.get(position).getC();
                     } else if (count == 3) {
-                        Option = list.get(position).getOption4();
+                        Option = list.get(position).getD();
                     }
                     playAnim(optionsContainer.getChildAt(count), 0, Option);
                     count++;
@@ -217,6 +230,8 @@ public class QuestionsActivity extends AppCompatActivity {
                     }
                     view.setTag(data);
                     playAnim(view, 1, data);
+                }else {
+                enableOption(true);
                 }
             }
 
@@ -234,8 +249,8 @@ public class QuestionsActivity extends AppCompatActivity {
 
     private void checkAnswer(Button selectedOption) {
         enableOption(false);
-        NextBtn.setEnabled(true);
-        NextBtn.setAlpha(1);
+        nextBtn.setEnabled(true);
+        nextBtn.setAlpha(1);
         if (selectedOption.getText().toString().equals(list.get(position).getAnswer())) {
             //Correct Answer
             myScore++;
@@ -279,7 +294,7 @@ public class QuestionsActivity extends AppCompatActivity {
         for (QuestionModel model : bookmarkedList) {
             if (model.getQuestion().equals(list.get(position).getQuestion())
                     && model.getAnswer().equals(list.get(position).getAnswer())
-                    && model.getSetNumber() == list.get(position).getSetNumber()) {
+                    && model.getSet().equals(list.get(position).getSet())) {
 
                 matched = true;
                 matchedPosition = i;

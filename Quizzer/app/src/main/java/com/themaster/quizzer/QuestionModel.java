@@ -2,61 +2,65 @@ package com.themaster.quizzer;
 
 public class QuestionModel {
 
-    private String Question, option1, option2, option3, option4, answer;
-    private int setNumber;
+    String id, question, A, B, C, D, answer,set;
 
-    public QuestionModel() {
-        //to avoid no-arguments constructor exception
+    public QuestionModel(String id, String question, String a, String b, String c, String d, String answer, String set) {
+        this.id = id;
+        this.question = question;
+        A = a;
+        B = b;
+        C = c;
+        D = d;
+        this.answer = answer;
+        this.set = set;
     }
 
-    public QuestionModel(String question, String option1, String option2, String option3, String option4, String answer, int setNumber) {
-        Question = question;
-        this.option1 = option1;
-        this.option2 = option2;
-        this.option3 = option3;
-        this.option4 = option4;
-        this.answer = answer;
-        this.setNumber = setNumber;
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getQuestion() {
-        return Question;
+        return question;
     }
 
     public void setQuestion(String question) {
-        Question = question;
+        this.question = question;
     }
 
-    public String getOption1() {
-        return option1;
+    public String getA() {
+        return A;
     }
 
-    public void setOption1(String option1) {
-        this.option1 = option1;
+    public void setA(String a) {
+        A = a;
     }
 
-    public String getOption2() {
-        return option2;
+    public String getB() {
+        return B;
     }
 
-    public void setOption2(String option2) {
-        this.option2 = option2;
+    public void setB(String b) {
+        B = b;
     }
 
-    public String getOption3() {
-        return option3;
+    public String getC() {
+        return C;
     }
 
-    public void setOption3(String option3) {
-        this.option3 = option3;
+    public void setC(String c) {
+        C = c;
     }
 
-    public String getOption4() {
-        return option4;
+    public String getD() {
+        return D;
     }
 
-    public void setOption4(String option4) {
-        this.option4 = option4;
+    public void setD(String d) {
+        D = d;
     }
 
     public String getAnswer() {
@@ -67,11 +71,11 @@ public class QuestionModel {
         this.answer = answer;
     }
 
-    public int getSetNumber() {
-        return setNumber;
+    public String getSet() {
+        return set;
     }
 
-    public void setSetNumber(int setNumber) {
-        this.setNumber = setNumber;
+    public void setSet(String set) {
+        this.set = set;
     }
 }
